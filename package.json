@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/mocharfian1/arfian-app-5#readme",
   "dependencies": {
-    "express": "^4.17.2"
+    "express": "^4.17.2",
+    "jsonwebtoken": "^8.5.1",
+    "sequelize": "^6.12.4",
+    "sqlite3": "^5.0.2"
   }
 }
