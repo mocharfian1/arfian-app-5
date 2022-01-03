@@ -72,6 +72,32 @@ exports.buildResponseCreateTemplate = (template, checklist, items) => {
     }
 }
 
+exports.buildResponseCreateChecklist = (checklist, items, link = null) => {
+    return {
+        data: {
+            id: checklist.id,
+            type: 'checklists',
+            attributes: {
+                object_domain: checklist.object_domain,
+                object_id:checklist.object_id,
+                task_id:checklist.task_id,
+                description:checklist.description,
+                is_completed:checklist.is_completed,
+                due:checklist.due,
+                urgency:checklist.urgency,
+                completed_at:checklist.completed_at,
+                updated_by:checklist.updated_by,
+                created_by:checklist.created_by,
+                created_at:checklist.created_at,
+                updated_at:checklist.updated_at
+            },
+            links:{
+                self:link.self
+            }
+        }
+    }
+}
+
 exports.buildResponseListAllTemplates = (meta, links, template) => {
     return {
         meta: {

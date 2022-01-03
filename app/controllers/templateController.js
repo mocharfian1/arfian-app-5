@@ -127,3 +127,58 @@ exports.getListAllTemplates = function (req, res){
         response.error(constants.BAD_REQUEST_RESPONSE, constants.BAD_REQUEST_CODE, res)
     })
 }
+
+//Get Checklist Template
+exports.getListByChecklistId = function (req, res){
+    TemplateAttribute._res(res)
+
+    let optTemplate = {
+        filter: {
+            type: 'templates', id: req.params.templateId
+        }
+    }
+
+    let templates;
+
+    templateService.getTemplateById(db,optTemplate).then((resTemplate)=>{
+        templates = TemplateAttribute._attributesModel(resTemplate.dataValues)
+
+        let idTemplate = resTemplate.dataValues.id
+
+        let optChecklist = {
+            filter: { type: 'checklist', object_id: idTemplate }
+        }
+
+        checklistServiice.getChecklistOneByTemplateId(db,optChecklist).then(rChecklist => {
+            templates.checklist = TemplateAttribute._checklistModel(rChecklist.dataValues)
+
+            let optItems = {
+                filter: { type: 'items', object_id: idTemplate },
+                sort: ['id','DESC'],
+                fields: ['id','object_id','description','urgency','due_interval','due_unit'],
+                offset: null,
+                limit: null
+            }
+
+            itemService.getItemListsByTemplateId(db,optItems).then(rItems =>{
+                let arrItems = []
+                rItems.map((valueItems, indexItems)=>{
+                    arrItems.push(TemplateAttribute._singleItemModel(valueItems.dataValues))
+                    templates.items = arrItems
+
+                    if(indexItems === rItems.length - 1){
+                        response.send({ data : { type: 'templates', id: idTemplate , attributes:templates } }, TemplateAttribute.response())
+                    }
+                })
+
+            }).catch((e)=> {
+                response.error(constants.BAD_REQUEST_RESPONSE, constants.BAD_REQUEST_CODE, res)
+            })
+        }).catch((e)=> {
+            console.log(e)
+            response.error(constants.BAD_REQUEST_RESPONSE, constants.BAD_REQUEST_CODE, TemplateAttribute.response())
+        })
+    }).catch((e)=>{
+
+    })
+}

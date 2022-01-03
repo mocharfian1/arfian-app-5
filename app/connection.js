@@ -19,6 +19,8 @@ const tableTemplate = db.define('ski_template', {
     due_interval: Sequelize.INTEGER,
     due_unit: Sequelize.STRING,
     urgency: Sequelize.INTEGER,
+    is_complete: Sequelize.BOOLEAN,
+    completed_at: Sequelize.STRING
 });
 
 exports.template_create = function (data){
@@ -76,6 +78,16 @@ exports.template_getItems = function (fields = null, sort = null, filter = null,
     });
 }
 
+exports.template_getTemplateById = function (filter= null){
+    return new Promise((resolve, reject) => {
+        tableTemplate.findOne({ where: filter}).then((res)=>{
+            return resolve(res);
+        }).catch((e)=>{
+            return reject({})
+        })
+    });
+}
+
 exports.template_getChecklistOne = function (fields = null, filter = null){
     return new Promise((resolve, reject) => {
         tableTemplate.findOne({ attributes:fields, where: filter }).then((res)=>{
@@ -98,6 +110,20 @@ exports.template_getAllTemp = function (type){
 
 exports.template_getAllItem = function (id){
     return tableTemplate.findAll({ where:{ type: 'items',object_id:id } })
+}
+
+exports.item_bulkCreate_fromTemplate = function (data){
+    let dataItem = data.map(v => {
+        Object.assign(v,{ name: v })
+    })
+
+    return new Promise((resolve, reject) => {
+        tableTemplate.bulkCreate(data).then((res)=>{
+            return resolve(res);
+        }).catch((e)=>{
+            return reject(e);
+        })
+    })
 }
 
 db.sync({force: false, logging: true}).then(r => {
