@@ -28,7 +28,7 @@ exports.createChecklist = function(req, res) {
         db.template_create(attributes).then(({ dataValues })=>{
             vChecklist = dataValues;
 
-            const items = attributes.items.map(v => Object.assign(v, { type: 'items' }))
+            const items = attributes.items.map(v => Object.assign(v, { type: 'items', object_id: vChecklist.id }))
 
             db.item_bulkCreate_fromTemplate(items).then((dataValues)=>{
                 vItems = dataValues;
