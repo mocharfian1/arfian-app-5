@@ -1,6 +1,7 @@
 'use strict';
 
 const Sequelize = require('sequelize');
+const Constant = require("./helper/constants");
 
 const db = new Sequelize('ski_telkom', null, null, {
     dialect: "sqlite",
@@ -38,6 +39,65 @@ exports.template_bulkCreate = function (data){
             return reject(e);
         })
     })
+}
+
+exports.template_getAllTemplates = function (fields = [], sort = [], filter = {}, limit = 10, offset = 0){
+    return new Promise((resolve, reject) => {
+        tableTemplate.findAll({ attributes:fields, where: filter, offset: offset, limit: limit, order: [sort] }).then((res)=>{
+            return resolve(res);
+        })
+    });
+}
+
+exports.template_getAllChecklists = function (fields = null, sort = null, filter = null, limit = 10, offset = 0){
+    return new Promise((resolve, reject) => {
+        tableTemplate.findAll({ attributes:fields, where: filter, offset: offset, limit: limit, order: [sort] }).then((res)=>{
+            return resolve(res);
+        })
+    });
+}
+
+exports.template_getChecklist = function (fields = null, sort = null, filter = null, limit = 10, offset = 0){
+    return new Promise((resolve, reject) => {
+        tableTemplate.findOne({ where: filter }).then((res)=>{
+            console.log(res)
+            return resolve(res);
+        })
+    });
+}
+
+exports.template_getItems = function (fields = null, sort = null, filter = null, limit = 10, offset = 0){
+    return new Promise((resolve, reject) => {
+        tableTemplate.findAll({ attributes:fields, where: filter, offset: offset, limit: limit, order: [sort] }).then((res)=>{
+            return resolve(res);
+        }).catch((e)=>{
+            return reject({})
+        })
+    });
+}
+
+exports.template_getChecklistOne = function (fields = null, filter = null){
+    return new Promise((resolve, reject) => {
+        tableTemplate.findOne({ attributes:fields, where: filter }).then((res)=>{
+            return resolve(res);
+        })
+    });
+}
+
+exports.template_getCountTemplates = function (type){
+    return new Promise((resolve, reject) => {
+        tableTemplate.count({ where:{ type: type } }).then((res)=>{
+            return resolve(res);
+        });
+    });
+}
+
+exports.template_getAllTemp = function (type){
+    return tableTemplate.findAll({ where:{ type: 'templates' } })
+}
+
+exports.template_getAllItem = function (id){
+    return tableTemplate.findAll({ where:{ type: 'items',object_id:id } })
 }
 
 db.sync({force: false, logging: true}).then(r => {

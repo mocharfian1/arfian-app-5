@@ -4,6 +4,9 @@ var response = require('../response');
 var db = require('../connection')
 const TemplateAttribute = require("../model/TemplateAttribute");
 const constants = require('../helper/constants');
+const itemService = require("../service/itemService");
+const templateService = require("../service/templateService");
+const checklistServiice = require("../service/checklistService");
 // var template = require('../model/TemplateAttribute')
 
 exports.index = function(req, res) {
@@ -48,3 +51,79 @@ exports.createChecklistTemplate = function(req, res) {
         response.error(constants.BAD_REQUEST_RESPONSE, constants.BAD_REQUEST_CODE, res)
     }
 };
+
+//List All Templates
+exports.getListAllTemplates = function (req, res){
+    TemplateAttribute._res(res)
+
+    const { query } = req;
+
+    let optTemplate = {
+        filter: {type: 'templates' },
+        sort: ['id', 'DESC'],
+        fields: ['id','name','object_id'],
+        offset: query.page_offset,
+        limit: query.page_limit
+    }
+
+    const arrTemplates = [];
+
+    let meta = {
+        count : Number,
+        total : Number
+    }
+
+    let link = {
+
+    }
+
+    db.template_getCountTemplates('templates').then((total)=>{
+        meta.total = total
+    }).catch(()=> {
+        response.error(constants.BAD_REQUEST_RESPONSE, constants.BAD_REQUEST_CODE, res)
+    })
+
+    templateService.getAllTemplates(db,optTemplate).then(rTemplate => {
+        meta.count = rTemplate.length
+        rTemplate.map((valueTemplate, indexTemplate) => {
+            let objectId = valueTemplate.dataValues.id
+
+            let optChecklist = {
+                filter: { type: 'checklist', object_id: objectId },
+                fields: null
+            }
+
+            checklistServiice.getChecklistOneByTemplateId(db,optChecklist).then(rChecklist => {
+                let indexArr = arrTemplates.push(TemplateAttribute._attributesModel(valueTemplate.dataValues)) - 1
+                arrTemplates[indexArr].checklist = TemplateAttribute._checklistModel(rChecklist.dataValues)
+
+                let optItems = {
+                    filter: { type: 'items', object_id: objectId },
+                    sort: ['id','DESC'],
+                    fields: ['id','object_id','description','urgency','due_interval','due_unit'],
+                    offset: null,
+                    limit: null
+                }
+
+                itemService.getItemListsByTemplateId(db,optItems).then(rItems =>{
+                    let arrItems = []
+                    rItems.map((valueItems, indexItems)=>{
+                        arrItems.push(TemplateAttribute._singleItemModel(valueItems.dataValues))
+                        arrTemplates[indexTemplate].items = arrItems
+
+                        if(indexTemplate === rTemplate.length - 1 && indexItems === rItems.length - 1){
+                            response.send({ meta, link, arrTemplates }, TemplateAttribute.response())
+                        }
+                    })
+
+                }).catch(()=> {
+                    response.error(constants.BAD_REQUEST_RESPONSE, constants.BAD_REQUEST_CODE, res)
+                })
+            }).catch((e)=> {
+                response.error(constants.BAD_REQUEST_RESPONSE, constants.BAD_REQUEST_CODE, TemplateAttribute.response())
+            })
+        })
+    }).catch(()=> {
+        response.error(constants.BAD_REQUEST_RESPONSE, constants.BAD_REQUEST_CODE, res)
+    })
+}

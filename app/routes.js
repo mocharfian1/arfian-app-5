@@ -10,4 +10,5 @@ module.exports = function(app) {
 
     //------ TEMPLATES -------
     app.route('/checklists/templates').post(templateController.createChecklistTemplate);
+    app.route('/checklists/templates').get(templateController.getListAllTemplates);
 };
