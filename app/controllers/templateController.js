@@ -112,7 +112,7 @@ exports.getListAllTemplates = function (req, res){
                         arrTemplates[indexTemplate].items = arrItems
 
                         if(indexTemplate === rTemplate.length - 1 && indexItems === rItems.length - 1){
-                            response.send({ meta, link, arrTemplates }, TemplateAttribute.response())
+                            response.send({ meta, link, data:arrTemplates }, TemplateAttribute.response())
                         }
                     })
 
